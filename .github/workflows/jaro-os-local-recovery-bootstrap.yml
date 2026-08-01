@@ -1,0 +1,126 @@
+name: JARO OS Local Recovery Bootstrap
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  recover-local-jaro-os:
+    if: github.head_ref == 'jaro-os-recovery-bootstrap-20260801'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 10
+    steps:
+      - name: Promote and restart Transport Worker v2
+        shell: powershell
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          $ProjectPath = 'C:\Users\Jaro\OneDrive\Dokumenty\Agent produkt\pc-agent'
+          $BridgeRepoPath = 'C:\Users\Jaro\OneDrive\Dokumenty\Agent produkt\jaro-os-bridge'
+          $CandidatePath = Join-Path $ProjectPath 'jaro-os-transport-worker-v2.ps1'
+          $ActivePath = Join-Path $ProjectPath 'jaro-os-transport-worker.ps1'
+          $ControlPath = Join-Path $ProjectPath 'control'
+          $HeartbeatPath = Join-Path $ControlPath 'transport-worker.heartbeat.json'
+          $ExpectedSha = '70D4C89A34EC5EA3CD0D64774F7CFB224620D21CE8D3859967C55DBE568B6DBB'
+          $Stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+          $RecoveryRoot = Join-Path $ControlPath ('jaro-os-runs\github-actions-bootstrap-' + $Stamp)
+          $BackupRoot = Join-Path $RecoveryRoot 'backup'
+          New-Item -ItemType Directory -Force -Path $RecoveryRoot,$BackupRoot | Out-Null
+
+          function Assert-ParseClean([string]$Path) {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($Path,[ref]$tokens,[ref]$errors)
+            if (@($errors).Count -gt 0) {
+              throw ('PowerShell parser errors in ' + $Path + ': ' + ((@($errors) | ForEach-Object { $_.Message }) -join ' | '))
+            }
+          }
+
+          if (-not (Test-Path -LiteralPath $CandidatePath -PathType Leaf)) {
+            throw 'Staged Transport Worker v2 candidate is missing.'
+          }
+          if (-not (Test-Path -LiteralPath $BridgeRepoPath -PathType Container)) {
+            throw 'Local jaro-os-bridge clone is missing.'
+          }
+
+          $CandidateSha = (Get-FileHash -LiteralPath $CandidatePath -Algorithm SHA256).Hash
+          if ($CandidateSha -ne $ExpectedSha) {
+            throw "Transport Worker v2 SHA mismatch. Expected $ExpectedSha actual $CandidateSha"
+          }
+          Assert-ParseClean $CandidatePath
+
+          $BackupPath = $null
+          if (Test-Path -LiteralPath $ActivePath -PathType Leaf) {
+            $BackupPath = Join-Path $BackupRoot ('jaro-os-transport-worker.before-v2-' + $Stamp + '.ps1')
+            Copy-Item -LiteralPath $ActivePath -Destination $BackupPath -Force
+          }
+
+          $rollback = [ordered]@{
+            createdAt = (Get-Date).ToString('o')
+            candidatePath = $CandidatePath
+            candidateSha256 = $CandidateSha
+            activePath = $ActivePath
+            backupPath = $BackupPath
+            productionChanged = $false
+          }
+          $rollback | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $RecoveryRoot 'rollback-manifest.json') -Encoding UTF8
+
+          $oldWorkers = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+            $_.CommandLine -and $_.CommandLine -match 'jaro-os-transport-worker(?:-v2)?\.ps1'
+          })
+          foreach ($worker in $oldWorkers) {
+            & taskkill.exe /PID $worker.ProcessId /T /F 2>&1 | Out-Null
+          }
+          Start-Sleep -Seconds 2
+
+          Copy-Item -LiteralPath $CandidatePath -Destination $ActivePath -Force
+          Assert-ParseClean $ActivePath
+          $ActiveSha = (Get-FileHash -LiteralPath $ActivePath -Algorithm SHA256).Hash
+          if ($ActiveSha -ne $ExpectedSha) {
+            if ($BackupPath) { Copy-Item -LiteralPath $BackupPath -Destination $ActivePath -Force }
+            throw 'Promoted active worker hash verification failed; backup restored.'
+          }
+
+          Remove-Item Env:RUNNER_TRACKING_ID -ErrorAction SilentlyContinue
+          $workerProcess = Start-Process powershell.exe -WindowStyle Hidden -PassThru -ArgumentList @(
+            '-NoProfile','-ExecutionPolicy','Bypass','-File',$ActivePath,
+            '-ProjectPath',$ProjectPath,
+            '-BridgeRepoPath',$BridgeRepoPath,
+            '-PollSeconds','15'
+          )
+
+          Start-Sleep -Seconds 35
+          if (-not (Test-Path -LiteralPath $HeartbeatPath -PathType Leaf)) {
+            throw 'Transport Worker v2 heartbeat was not created.'
+          }
+          $heartbeat = Get-Content -LiteralPath $HeartbeatPath -Raw -Encoding UTF8 | ConvertFrom-Json
+          if ([string]$heartbeat.workerVersion -ne '2.0.0') {
+            throw ('Unexpected worker version in heartbeat: ' + [string]$heartbeat.workerVersion)
+          }
+          if (-not (Get-Process -Id ([int]$heartbeat.processId) -ErrorAction SilentlyContinue)) {
+            throw 'Heartbeat process is not alive.'
+          }
+
+          $result = [ordered]@{
+            status = 'TRANSPORT_WORKER_V2_RUNNING'
+            completedAt = (Get-Date).ToString('o')
+            workerVersion = [string]$heartbeat.workerVersion
+            workerPid = [int]$heartbeat.processId
+            heartbeatStatus = [string]$heartbeat.status
+            lastSuccessfulSyncAt = $heartbeat.lastSuccessfulSyncAt
+            lastError = $heartbeat.lastError
+            candidateSha256 = $CandidateSha
+            activeSha256 = $ActiveSha
+            backupPath = $BackupPath
+            recoveryRoot = $RecoveryRoot
+            productionChanged = $false
+            wordpressChanged = $false
+            hostingChanged = $false
+            phpChanged = $false
+          }
+          $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $RecoveryRoot 'result.json') -Encoding UTF8
+          $result | ConvertTo-Json -Depth 10
