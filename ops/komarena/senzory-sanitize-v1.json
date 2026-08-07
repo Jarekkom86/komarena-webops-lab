@@ -1,0 +1,57 @@
+{
+  "task": "komarena-senzory-sanitize-v1",
+  "target": "https://komarena.sk/senzory/",
+  "intent": "KEEP_AND_SANITIZE",
+  "sourceOfTruth": "GitHub issue #70 + owner instruction in ChatGPT on 2026-08-07",
+  "changeClass": "reversible production content cleanup after backup gate",
+  "preflight": [
+    "Resolve the existing WordPress page by slug 'senzory' and record its ID, status, author, modified time and native builder/editor type.",
+    "Export the page raw content plus all builder/template/postmeta fields needed for an exact restore.",
+    "Create and verify a fresh full database backup and wp-content backup; record SHA-256 hashes in rollback-manifest.json.",
+    "Capture current public HTML and desktop/mobile screenshots.",
+    "Do not change WooCommerce products, prices, stock, categories or global theme settings in this task."
+  ],
+  "safeEdits": [
+    {
+      "rule": "REMOVE_STAGING_COPY",
+      "details": "Remove any public editorial/staging instruction beginning with 'Pred zverejnením:' or equivalent internal publishing note. Do not replace it with another staging note."
+    },
+    {
+      "rule": "REMOVE_UNVERIFIED_IMAGE_PLACEHOLDER_COPY",
+      "details": "Remove public placeholder wording such as 'Overená fotka sa dopĺňa'. Keep the layout accessible; do not claim that an image is verified unless its source is actually verified."
+    },
+    {
+      "rule": "ENCODING_ONLY_IF_RAW_IS_BROKEN",
+      "details": "Correct strings such as 'produktov? poh?ad', 'vodotesn?', 'pohybov?' only if the authenticated raw WordPress content itself contains broken characters. If raw UTF-8 is correct and the corruption exists only in an external crawler/cache snapshot, do not rewrite the page for that reason."
+    },
+    {
+      "rule": "PRODUCT_CARD_TRUTH_GATE",
+      "details": "For every product card on /senzory/, keep price, stock wording and cart/detail CTA only when it resolves to a real current WooCommerce product and current store data. If a card is only a prototype or unresolved item, remove/disable the transactional claim without deleting the surrounding educational category content."
+    },
+    {
+      "rule": "PRESERVE_PAGE_PURPOSE",
+      "details": "Keep the page as a KomArena sensor/ESPHome/Home Assistant content surface. Do not redirect it to ReSmart and do not delete it."
+    }
+  ],
+  "verification": [
+    "Public /senzory/ returns HTTP 200.",
+    "Exactly one H1 remains and the page retains KomArena/Home Assistant/ESPHome sensor positioning.",
+    "Zero occurrences of 'Pred zverejnením' and zero public image-verification placeholder copy.",
+    "No newly introduced mojibake or replacement-question-mark corruption in visible Slovak text or alt text.",
+    "Every visible transactional CTA points to a real current target; no dead or prototype cart/detail CTA remains.",
+    "Desktop and mobile have no horizontal overflow or broken cards.",
+    "Compare public HTML after cache purge only for this page."
+  ],
+  "rollback": [
+    "Restore the exact exported page content and native builder/postmeta snapshot.",
+    "Restore affected database rows from the verified backup if native page restore is insufficient.",
+    "Purge cache only for /senzory/ and verify the restored public snapshot."
+  ],
+  "forbidden": [
+    "No blind direct REST overwrite of builder-managed content.",
+    "No global cache purge unless technically required and documented.",
+    "No product/price/stock edits without separate verified WooCommerce evidence.",
+    "No deletion or redirect of /senzory/.",
+    "Never log or commit WordPress credentials."
+  ]
+}
