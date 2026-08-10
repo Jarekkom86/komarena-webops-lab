@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 - 2026-08-10
+- Hardened portfolio template detection against later full-width template filters used on production.
+- Raised template resolution priority so the explicitly selected portfolio template wins.
+
 ## 1.1.0 - 2026-08-10
 - Added an opt-in professional portfolio page template and isolated responsive stylesheet.
 - Documented KomArena/ReSmart, TIP-TOP Kuchyne, JARO OS, and intelligent hot tub + photovoltaic automation without invented metrics.
