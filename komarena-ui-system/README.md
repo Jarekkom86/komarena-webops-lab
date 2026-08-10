@@ -3,7 +3,7 @@
 WordPress plugin that unifies frontend design across homepage, header, search, menu, WooCommerce listing/category/product pages, sidebar widgets and footer for KomArena.sk.
 
 ## Version
-1.0.2
+1.1.0
 
 ## Install
 1. Upload `komarena-ui-system` folder as ZIP in **WordPress Admin → Plugins → Add New → Upload Plugin**.
@@ -19,6 +19,7 @@ WordPress plugin that unifies frontend design across homepage, header, search, m
 - Does not change database.
 - Does not call external services.
 - Does not modify checkout/payment/shipping/order logic.
+- Adds an opt-in `KomArena – Portfólio` page template with isolated responsive styles.
 - Disabling plugin immediately disables design changes.
 
 ## Notes

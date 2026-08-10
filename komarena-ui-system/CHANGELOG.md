@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0 - 2026-08-10
+- Added an opt-in professional portfolio page template and isolated responsive stylesheet.
+- Documented KomArena/ReSmart, TIP-TOP Kuchyne, JARO OS, and intelligent hot tub + photovoltaic automation without invented metrics.
+- Kept checkout, payment, shipping, orders, database, and production unchanged.
+
 ## 1.0.1 - 2026-05-04
 - Reduced header top-row visual height for a tighter modern look.
 - Reduced main menu spacing and link padding.
