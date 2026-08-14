@@ -30,7 +30,10 @@ final class KomArena_Agent_Core_Actions {
     public function execute(array $task) {
         $task_id = isset($task['task_id']) ? sanitize_text_field((string) $task['task_id']) : '';
         $idempotency_key = isset($task['idempotency_key']) ? sanitize_text_field((string) $task['idempotency_key']) : '';
-        $action = isset($task['action']) ? sanitize_key((string) $task['action']) : '';
+        $action = isset($task['action']) ? strtolower(trim((string) $task['action'])) : '';
+        if ($action !== '' && !preg_match('/^[a-z0-9.:-]{3,64}$/', $action)) {
+            return new WP_Error('komarena_action_format', 'Action name has an invalid format.', ['status' => 400]);
+        }
         $payload = isset($task['payload']) && is_array($task['payload']) ? $task['payload'] : [];
 
         if ($task_id === '' || $idempotency_key === '' || $action === '') {
