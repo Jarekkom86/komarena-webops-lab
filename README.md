@@ -56,7 +56,7 @@ kontrolných zoznamov pre bezpečnú spoluprácu s AI agentmi.
 ## Poznámky z učenia
 
 Repozitár pôvodne vznikol ako zbierka Python príkladov. Pôvodný obsah zostáva
-zachovaný v [docs/python-learning-notes.md](docs/python-learning-notes.md), aby
+zachovaný v [archive/python-learning-notes.md](archive/python-learning-notes.md), aby
 hlavný README zostal pre návštevníka stručný a profesionálny.
 
 ## Stav a bezpečnosť
