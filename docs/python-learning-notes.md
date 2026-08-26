@@ -804,7 +804,7 @@ print(words_3)
 ```
 
 
-## Chart for GDP of EU countries 
+## Chart for GDP of EU countries
 
 ```python
 import matplotlib.pyplot as plt
@@ -879,9 +879,9 @@ with open(filename, 'w') as fd:
 
 
 
-## Read words 
+## Read words
 
-The 'words.txt' file:  
+The 'words.txt' file:
 
 ```
 sky
@@ -1491,7 +1491,7 @@ class Circle:
 
     def getRadius(self):
         return self.radius
-    
+
     def __str__(self):
         return f"Circle with radius {self.radius}"
 
@@ -1554,7 +1554,7 @@ print(titanic_df)
 https://resources.jetbrains.com/storage/products/pycharm/docs/PyCharm_ReferenceCard.pdf
 
 
-## filter words from URL 
+## filter words from URL
 
 ```python
 import requests
@@ -1690,7 +1690,7 @@ blue
 rock
 pen
 water
-war 
+war
 cloud
 cup
 ```
@@ -1707,7 +1707,7 @@ vals = [-2, 3, 0, 9, -2, 11, 9, -5]
 
 # calculate sum from data
 
-data = '1,2,3,4,5,6,7,8,9,10' 
+data = '1,2,3,4,5,6,7,8,9,10'
 
 # read words and select those starting with 'w'
 
@@ -1757,7 +1757,7 @@ with open(filename, 'r') as fd:
 ```python
 # calculate sum from data
 
-data = '1,2,3,4,5,6,7,8,9,10' 
+data = '1,2,3,4,5,6,7,8,9,10'
 fields = data.split(',')
 print(fields)
 
@@ -2129,7 +2129,7 @@ with open("users.csv", mode="r") as file:
     reader = csv.DictReader(file)
     users = list(reader)  # Convert the CSV data into a list of dictionaries
 
-    
+
 # Sort the users by last_name
 sorted_users = sorted(users, key=lambda x: x["last_name"])
 
@@ -2146,13 +2146,13 @@ for user in sorted_users:
 `data.txt`:
 
 ```
-I quickly followed suit, and descending into the bar-room accosted the grinning 
-landlord very pleasantly. I cherished no malice towards him, though he had been 
+I quickly followed suit, and descending into the bar-room accosted the grinning
+landlord very pleasantly. I cherished no malice towards him, though he had been
 skylarking with me not a little in the matter of my bedfellow.
-However, a good laugh is a mighty good thing, and rather too scarce a good thing; 
-the more’s the pity. So, if any one man, in his own proper person, afford stuff for 
-a good joke to anybody, let him not be backward, but let him cheerfully allow himself 
-to spend and be spent in that way. And the man that has anything bountifully laughable 
+However, a good laugh is a mighty good thing, and rather too scarce a good thing;
+the more’s the pity. So, if any one man, in his own proper person, afford stuff for
+a good joke to anybody, let him not be backward, but let him cheerfully allow himself
+to spend and be spent in that way. And the man that has anything bountifully laughable
 about him, be sure there is more in that man than you perhaps think for.
 ```
 
@@ -2194,7 +2194,7 @@ print('passed')
 # ----------------------------------------------------------
 
 
-# write script that reads data from 
+# write script that reads data from
 # https://webcode.me/users.xml, use copilot
 ```
 
@@ -2269,7 +2269,7 @@ for user in root.findall('ns:user', namespace):
     firstname = user.find('ns:firstname', namespace).text
     lastname = user.find('ns:lastname', namespace).text
     occupation = user.find('ns:occupation', namespace).text
-    
+
     print(f'User ID: {user_id}')
     print(f'First Name: {firstname}')
     print(f'Last Name: {lastname}')
@@ -2415,7 +2415,7 @@ data = '''
 11,12,13,14,15
 '''
 
-mysum = 0 
+mysum = 0
 
 assert mysum == 120, 'failed'
 print('passed')
@@ -2485,7 +2485,7 @@ filename = 'users.csv'
 users = []
 
 with open(filename, 'r') as f:
-    
+
     for line in f:
         cleaned_line = line.strip()
         fname, lname, occupation  = cleaned_line.split(',')
@@ -2528,6 +2528,3 @@ with open('users2.json', 'w') as f:
 
     json.dump(data, f, sort_keys=True, indent=4 * ' ')
 ```
-
-
-
